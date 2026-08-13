@@ -25,8 +25,9 @@ class Agent(object):
         self.critic_optim = Adam(self.critic.parameters(), lr=learning_rate)
 
         self.critic_target = Critic(num_inputs, action_space.shape[0], hidden_size, name=f"critc_target_{goal}").to(device=self.device)
-        self.policy = Policy(num_inputs, action_space.shape[0], hidden_size, name=f"policy_{goal}").to(device=self.device)
+        self.hard_update(self.critic_target, self.critic)
 
+        self.policy = Policy(num_inputs, action_space.shape[0], hidden_size, name=f"policy_{goal}").to(device=self.device)
         self.policy_optim = Adam(self.policy.parameters(), lr=learning_rate)
 
     def select_action(self, state, evaluation=False):
@@ -91,10 +92,16 @@ class Agent(object):
 
         return qf1_loss.item(), qf2_loss.item(), policy_loss.item(), alpha_loss.item(), alpha_tlogs.item()
 
+    def hard_update(self, target, source):
+        for target_param, param in zip(target.parameters(), source.parameters()):
+            target_param.data.copy_(param.data)
+
+
     def soft_update(self, target, source):
         for target_param, param in zip(target.parameters(), source.parameters()):
             target_param.data.copy_(target_param.data * (1.0 - self.tau) + param.data * self.tau)
 
+    
     def train(self, env, memory: ReplayBuffer, episodes=1000, batch_size=64, updates_per_step=1, summary_writer_name = "", max_episode_steps=100):
         #Tensorboard
         summary_writer_name = f'runs/{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}_' + summary_writer_name
@@ -140,7 +147,37 @@ class Agent(object):
             if episode % 10 == 0:
                 self.save_checkpoint()
 
+    def test(self, env: RoboticsObservationWrapper, episodes=1, max_episode_steps=500, prev_action=None):
 
+        for episode in range(episodes):
+            episode_reward = 0
+            episode_steps = 0
+            done = False
+
+            state, _ = env.reset()
+
+            while not done and episode_steps < max_episode_steps:
+                action = self.select_action(state, evaluation=True)
+
+                next_state, reward, done, _, _ = env.step(action)
+                episode_steps += 1
+                if reward ==1:
+                    done=True
+                    prev_action = action
+                episode_reward += reward
+
+
+                mask = 1 if episode_steps == max_episode_steps else float(not done)
+
+                state = next_state
+
+                if env.env.render_mode == "human":
+                    time.sleep(0.05)
+
+            print("Episodes: {}, episode steps: {}, reward:{}".format(episode, 
+                                                                      episode_steps, round(episode_reward, 2)))
+
+            return prev_action, episode_reward
 
 
 
@@ -168,5 +205,12 @@ class Agent(object):
             else: 
                 print("Unable to load models. Starting from scratch")
 
-        
+        if evaluate:
+            self.policy.eval()
+            self.critic.eval()
+            self.critic_target.eval()
+        else:
+            self.policy.train()
+            self.critic.train()
+            self.critic_target.train()    
 

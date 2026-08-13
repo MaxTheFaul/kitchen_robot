@@ -41,7 +41,7 @@ class Policy(nn.Module):
             )
 
             self.action_bias = torch.FloatTensor(
-                (action_space.high - action_space.low) / 2
+                (action_space.high + action_space.low) / 2
             )
 
     def forward(self, state):
