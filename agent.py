@@ -140,7 +140,7 @@ class Agent(object):
 
                 state = next_state
 
-            writer.add_scalar('reward/train', episode_steps, episode)
+            writer.add_scalar('reward/train', episode_reward, episode)
             print("Episodes: {}, Total numsteps{}, episode steps: {}, reward:{}".format(episode, total_numsteps, episode_steps, round(episode_reward, 2)))
 
 

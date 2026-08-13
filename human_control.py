@@ -48,7 +48,7 @@ if __name__ == '__main__':
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_h and pygame.key.get_mods() & pygame.KMOD_CTRL:
-                        env.render
+                        env.render()
                     action = controller.get_action()
             action = controller.get_action()
 
