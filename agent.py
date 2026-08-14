@@ -153,8 +153,10 @@ class Agent(object):
             episode_reward = 0
             episode_steps = 0
             done = False
-
-            state, _ = env.reset()
+            if prev_action is not None:
+                state, reward, done, _, _ = env.step(prev_action)
+            else:
+                state, _ = env.reset()
 
             while not done and episode_steps < max_episode_steps:
                 action = self.select_action(state, evaluation=True)
@@ -213,4 +215,3 @@ class Agent(object):
             self.policy.train()
             self.critic.train()
             self.critic_target.train()    
-

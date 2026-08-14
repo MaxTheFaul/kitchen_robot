@@ -21,8 +21,8 @@ if __name__ == '__main__':
     hidden_size = 512
     learning_rate = 0.0001
     batch_size = 64
-    
 
+    
     env = gym.make(env_name, max_episode_steps=max_episodes_steps, tasks_to_complete=[task], render_mode='human')
     env = RoboticsObservationWrapper(env, goal=task)
 
