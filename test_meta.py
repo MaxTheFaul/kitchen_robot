@@ -5,14 +5,14 @@ from gym_robotics_custom import RoboticsObservationWrapper
 from buffer import ReplayBuffer
 from model import *
 from agent import *
+from meta_agent import *
 
 if __name__ == '__main__':
 
     env_name = 'FrankaKitchen-v1'
-    max_episodes_steps = 500
+    max_episodes_steps = 1200
     replay_buffer_size = 1000000
-    tasks = ['microva']
-    task_no_spaces = task.replace(" ", "_")
+    tasks = ['top burner', 'microwave', 'hinge cabinet', 'slide cabinet']
     gamma = 0.99
     tau = 0.005
     alpha = 0.1
@@ -21,7 +21,16 @@ if __name__ == '__main__':
     hidden_size = 512
     learning_rate = 0.0001
     batch_size = 64
+    live_test = True
     
+    if live_test:
+        env = gym.make(env_name, max_episode_steps=max_episodes_steps, tasks_to_complete=tasks, render_mode='human')
+        env = RoboticsObservationWrapper(env)
 
-    env = gym.make(env_name, max_episode_steps=max_episodes_steps, tasks_to_complete=[task], render_mode='human')
-    env = RoboticsObservationWrapper(env, goal=task)
+        meta_agent = MetaAgent(env, tasks, max_episode_steps=max_episodes_steps)
+
+        meta_agent.initilise_agents()
+
+        meta_agent.test()
+
+        env.close()
