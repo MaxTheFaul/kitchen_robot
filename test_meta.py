@@ -12,7 +12,7 @@ if __name__ == '__main__':
     env_name = 'FrankaKitchen-v1'
     max_episodes_steps = 1200
     replay_buffer_size = 1000000
-    tasks = ['top burner', 'microwave', 'hinge cabinet', 'slide cabinet']
+    tasks = ['top burner', 'microwave', 'hinge cabinet']
     gamma = 0.99
     tau = 0.005
     alpha = 0.1
