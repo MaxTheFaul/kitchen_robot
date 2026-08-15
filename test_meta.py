@@ -21,7 +21,8 @@ if __name__ == '__main__':
     hidden_size = 512
     learning_rate = 0.0001
     batch_size = 64
-    live_test = True
+    live_test = False
+    generate_score = True
     
     if live_test:
         env = gym.make(env_name, max_episode_steps=max_episodes_steps, tasks_to_complete=tasks, render_mode='human')
@@ -34,3 +35,29 @@ if __name__ == '__main__':
         meta_agent.test()
 
         env.close()
+
+
+    if generate_score:
+        print(f"Generating performance score")
+        env = gym.make(env_name, max_episode_steps=max_episodes_steps, tasks_to_complete=tasks)
+        env = RoboticsObservationWrapper(env)
+
+        observation, info = env.reset()
+
+        observation_size = observation.shape[0]
+
+        meta_agent = MetaAgent(env,tasks, max_episode_steps=max_episodes_steps)
+
+        meta_agent.initilise_agents()
+
+        perf_score_epochs = 10
+
+        total_score = 0
+
+        for i in range(perf_score_epochs):
+            score = meta_agent.test()
+            total_score += score
+
+        scuccsess_ratio = ((total_score / len(tasks)) / perf_score_epochs) * 100
+
+        print(f"Success ratio {scuccsess_ratio:.2f}%")
