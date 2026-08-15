@@ -36,8 +36,8 @@ if __name__ == '__main__':
                   hidden_size=hidden_size, learning_rate=learning_rate, goal=task_no_spaces)
 
     memory = ReplayBuffer(replay_buffer_size, input_size=observation_size, 
-                          n_actions=env.action_space.shape[0], agument_rewards=True, 
-                          agument_data=True)
+                          n_actions=env.action_space.shape[0], augment_rewards=True, 
+                          augment_data=True)
     memory.load_from_csv(filename=f'checkpoints/human_memory_{task_no_spaces}.npz')
 
     time.sleep(2)
