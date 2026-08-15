@@ -3,7 +3,7 @@ import numpy as np
 
 
 class ReplayBuffer():
-    def __init__(self, max_size, input_size, n_actions, agument_data=False, agument_rewards=False,
+    def __init__(self, max_size, input_size, n_actions, augment_data=False, augment_rewards=False,
                  expert_data_ratio=0.1, augment_noise_ratio=0.1):
         
         self.mem_size = max_size
@@ -13,8 +13,8 @@ class ReplayBuffer():
         self.action_memory = np.zeros((self.mem_size, n_actions))
         self.reward_memory = np.zeros(self.mem_size)
         self.terminal_memory = np.zeros(self.mem_size, dtype=bool)
-        self.augment_data = agument_data
-        self.augment_rewards = agument_rewards
+        self.augment_data = augment_data
+        self.augment_rewards = augment_rewards
         self.augment_noise_ratio = augment_noise_ratio
         self.expert_data_ratio = expert_data_ratio
         self.expert_data_cutoff = 0
