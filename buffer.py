@@ -23,6 +23,7 @@ class ReplayBuffer():
         return self.mem_ctr
 
     def can_sample(self, batch_size):
+        #Set 500 for Training one agent and 100 for meta Agent
         if self.mem_ctr > (batch_size * 500):
             return True
         else: 

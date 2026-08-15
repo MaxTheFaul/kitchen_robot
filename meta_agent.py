@@ -86,4 +86,77 @@ class MetaAgent(object):
         return episode_reward
 
 
+    def train(self, episodes, batch_size=64, summary_writer_name='meta_agent'):
+
+        #Tensorboard
+        summary_writer_name = f'runs/{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}_' + summary_writer_name
+        writer = SummaryWriter(summary_writer_name)
+
+        updates = 0
+
+        for episode in range(episodes):
+
+            last_action = None
+            action = None
+
+
+            episode_reward = 0
+            episode_steps = 0
+
+            print(f"Starting episode: {episode}")
+
+            num_samples = random.choice([1,2])
+
+            for goal in random.sample(list(self.goal_dict.keys()), num_samples):
+                done = False
+                self.env.set_goal(self.goal_dict[goal])
+                state, _ = self.env.reset()
+
+                while not done and episode_steps < self.max_episode_steps:
+                    if last_action is not None:
+                        action = last_action
+                        last_action = None
+
+                    else:
+                        action = self.agent_dict[goal].select_action(state)
+
+                    if self.mem_dict[goal].can_sample(batch_size=64):
+
+                        critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = self.agent_dict[goal].update_parameters(self.mem_dict[goal], 
+                                                                                                                             batch_size,
+                                                                                                                               updates)
+                        writer.add_scalar('loss/critic_1', critic_1_loss, updates)
+                        writer.add_scalar('loss/critic_2', critic_2_loss, updates)
+                        writer.add_scalar('loss/policy', policy_loss, updates)
+                        writer.add_scalar('loss/entropy_loss', ent_loss, updates)
+                        updates += 1
+
+                    next_state, reward, done, _, _ = self.env.step(action)
+
+
+                    if reward == 1:
+                        done = True
+                        last_action = action
+
+                    episode_steps += 1
+                    episode_reward += reward
+
+                    #Ignore the done signal if it comes from hitiing the time hirozon
+                    mask = 1 if episode_steps == self.max_episode_steps else float(not done)
+
+                    self.mem_dict[goal].store_transition(state, action, reward, next_state, mask)
+
+
+                    state = next_state
+
+            episode_reward = episode_reward / num_samples
+
+            writer.add_scalar('reward/train',episode_reward, episode)
+            writer.add_scalar('reward/episode_steps',episode_steps, episode)
+            print("Episode: {}, Episode steps: {}, reward: {}".format(episode, episode_steps, episode_reward))
+
+
+            if episode % 10 == 0:
+                self.save_models()
+
         
